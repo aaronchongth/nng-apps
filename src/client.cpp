@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
+
+#include <string>
+
+#include "addressbook.pb.h"
 
 #include <nng/nng.h>
 #include <nng/protocol/reqrep0/req.h>
@@ -62,12 +65,40 @@ client(const char *url, const char *msecstr)
 int
 main(int argc, char **argv)
 {
-	int rc;
+	tutorial::AddressBook address_book;
+	tutorial::Person* person = address_book.add_people();
+	person->set_name("Aaron");
+	person->set_id(0);
 
-	if (argc != 3) {
-		fprintf(stderr, "Usage: %s <url> <secs>\n", argv[0]);
-		exit(EXIT_FAILURE);
+	std::string serialized_address_book;
+	if (!address_book.SerializeToString(&serialized_address_book))
+	{
+		printf("Unable to serialize address book\n");
+		return 1;
 	}
-	rc = client(argv[1], argv[2]);
-	exit(rc == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+
+	tutorial::AddressBook deserialized_address_book;
+	if (!deserialized_address_book.ParseFromString(serialized_address_book))
+	{
+		printf("Unable to deserialize address book\n");
+		return 1;
+	}
+
+	if (deserialized_address_book.people_size() != 1 ||
+			!deserialized_address_book.people(0).has_name() ||
+			deserialized_address_book.people(0).name() != std::string("Aaron"))
+	{
+		printf("Some values are wrong\n");
+		return 1;
+	}
+
+	// int rc;
+
+	// if (argc != 3) {
+	// 	fprintf(stderr, "Usage: %s <url> <secs>\n", argv[0]);
+	// 	exit(EXIT_FAILURE);
+	// }
+	// rc = client(argv[1], argv[2]);
+	// exit(rc == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
+	return 0;
 }

@@ -23,18 +23,35 @@ include(GNUInstallDirs)
 find_package(ament_cmake REQUIRED)
 find_package(nng CONFIG REQUIRED)
 
+include(FindProtobuf)
+find_package(Protobuf REQUIRED)
+
 add_executable(client
   src/client.cpp
+  src/stringmsg.pb.cc
+  src/addressbook.pb.cc
 )
 target_link_libraries(client
   nng::nng
+  ${Protobuf_LIBRARIES}
+)
+target_include_directories(client
+  PRIVATE
+    ${Protobuf_INCLUDE_DIR}
 )
 
 add_executable(server
   src/server.cpp
+  src/stringmsg.pb.cc
+  src/addressbook.pb.cc
 )
 target_link_libraries(server
   nng::nng
+  ${Protobuf_LIBRARIES}
+)
+target_include_directories(server
+  PRIVATE
+    ${Protobuf_INCLUDE_DIR}
 )
 
 install(
