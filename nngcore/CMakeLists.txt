@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 
-project(core VERSION 0.0.1 LANGUAGES C CXX)
+project(nngcore VERSION 0.0.1 LANGUAGES C CXX)
 
 find_package(ament_cmake REQUIRED)
 
@@ -29,63 +29,38 @@ PROTOBUF_GENERATE_CPP(
   PROTO_SRC 
   PROTO_HEADER 
   msgs/free_fleet_msgs.proto
-)  
+)
+set(ProtobufIncludePath ${CMAKE_CURRENT_BINARY_DIR}
+  CACHE INTERNAL "Path to generated protobuf files.")
 
-add_library(core
+add_library(nngcore
   src/Client.cpp
   ${PROTO_SRC}
   ${PROTO_HEADER}
 )
-target_link_libraries(core
+target_link_libraries(nngcore
   ${Protobuf_LIBRARIES}
   nng::nng
 )
-target_include_directories(core
+target_include_directories(nngcore
   PUBLIC
-    ${Protobuf_INCLUDE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${ProtobufIncludePath}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    ${Protobuf_INCLUDE_DIRS}   
 )
 
-ament_export_interfaces(core HAS_LIBRARY_TARGET)
-ament_export_dependencies(Protobuf)
-
-# add_executable(client
-#   src/client.cpp
-# )
-# target_link_libraries(client
-#   nng::nng
-#   ${Protobuf_LIBRARIES}
-# )
-# target_include_directories(client
-#   PRIVATE
-#     ${Protobuf_INCLUDE_DIR}
-# )
-
-# add_executable(server
-#   src/server.cpp
-#   src/stringmsg.pb.cc
-#   src/addressbook.pb.cc
-# )
-# target_link_libraries(server
-#   nng::nng
-#   ${Protobuf_LIBRARIES}
-# )
-# target_include_directories(server
-#   PRIVATE
-#     ${Protobuf_INCLUDE_DIR}
-# )
-
-# install(
-#   TARGETS 
-#     client
-#     server
-#   RUNTIME DESTINATION lib/nng-apps
-#   LIBRARY DESTINATION lib
-#   ARCHIVE DESTINATION lib
-# )
+ament_export_interfaces(nngcore HAS_LIBRARY_TARGET)
+ament_export_dependencies(Protobuf nng)
 
 install(
-  TARGETS core
-  EXPORT core
+  DIRECTORY include/nngcore
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(
+  TARGETS nngcore
+  EXPORT nngcore
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

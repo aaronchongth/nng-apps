@@ -1,3 +1,6 @@
+#ifndef CORE__INCLUDE__CORE__CLIENT_HPP
+#define CORE__INCLUDE__CORE__CLIENT_HPP
+
 #include <stdio.h>
 #include <string>
 #include <memory>
@@ -5,8 +8,6 @@
 #include <nng/nng.h>
 #include <nng/protocol/reqrep0/req.h>
 #include <nng/supplemental/util/platform.h>
-
-#include "free_fleet_msgs.pb.h"
 
 class Client
 {
@@ -16,14 +17,16 @@ public:
 
   static SharedPtr make(const std::string& url);
 
+  void test();
+
   ~Client();
 
 private:
 
   nng_socket _sock;
   nng_msg* msg;
-  nng_time _start;
-  nng_time _end
 
   Client();
 };
+
+#endif // CORE__INCLUDE__CORE__CLIENT_HPP
