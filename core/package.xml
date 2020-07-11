@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>nng-apps</name>
+  <name>core</name>
   <version>1.0.0</version>
   <description>Package for testing nng</description>
   <maintainer email="aaron@openrobotics.org">Grey</maintainer>
@@ -11,6 +11,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>nng</depend>
+  <depend>Protobuf</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
