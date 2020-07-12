@@ -35,6 +35,7 @@ set(ProtobufIncludePath ${CMAKE_CURRENT_BINARY_DIR}
 
 add_library(nngcore
   src/Client.cpp
+  src/Server.cpp
   ${PROTO_SRC}
   ${PROTO_HEADER}
 )

@@ -36,7 +36,31 @@ void Client::test()
     rs->set_name("test_robot");
 
     std::string serialized_fs = fs.SerializeAsString();
+
+    nng_msg* msg;
+    int rv;
+    if ((rv = nng_msg_alloc(&msg, 0)) != 0)
+    {
+      fatal("nng_msg_alloc", rv);
+    }
+    if ((rv = nng_msg_append(
+          msg, 
+          static_cast<void*>(&serialized_fs), 
+          serialized_fs.size())) != 0)
+    {
+      fatal("nng_msg_append", rv);
+    }
+
+    if ((rv = nng_sendmsg(_sock, msg, 0)) != 0)
+    {
+      fatal("nng_send", rv);
+    }
+
+    nng_msg_free(msg);
   }
+
+  end = nng_clock();
+	printf("100 sends took %u milliseconds.\n", (uint32_t)(end - start));
 }
 
 Client::~Client()
