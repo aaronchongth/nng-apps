@@ -28,34 +28,12 @@ add_executable(client
 )
 target_link_libraries(client
   nngcore::nngcore
-  # ${nngcore_LIBRARIES}
-)
-target_include_directories(client
-  PUBLIC
-    ${nngcore_INCLUDE_DIRS}
 )
 target_include_directories(client
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  # PRIVATE
-  #   ${nngcore_INCLUDE_DIRS}
 )
-
-# target_link_libraries(free_fleet_server
-#   free_fleet::free_fleet
-#   Eigen3::Eigen
-#   ${rclcpp_LIBRARIES}
-#   ${rmf_fleet_msgs_LIBRARIES}
-# )
-
-# target_include_directories(free_fleet_server
-#   PUBLIC
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-#     ${rclcpp_INCLUDE_DIRS}
-#     ${rmf_fleet_msgs_INCLUDE_DIRS}
-# )
 
 install(
   TARGETS 

@@ -54,6 +54,13 @@ target_include_directories(nngcore
 ament_export_interfaces(nngcore HAS_LIBRARY_TARGET)
 ament_export_dependencies(Protobuf nng)
 
+add_executable(pubsub
+  src/pubsub.c
+)
+target_link_libraries(pubsub
+  nng::nng
+)
+
 install(
   DIRECTORY include/nngcore
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
@@ -66,5 +73,13 @@ install(
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+
+install(
+  TARGETS pubsub
+  RUNTIME DESTINATION lib/nngcore
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+
 
 ament_package()

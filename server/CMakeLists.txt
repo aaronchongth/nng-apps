@@ -23,44 +23,22 @@ include(GNUInstallDirs)
 find_package(ament_cmake REQUIRED)
 find_package(nngcore REQUIRED)
 
-add_executable(client
+add_executable(server
   src/main.cpp
 )
-target_link_libraries(client
+target_link_libraries(server
   nngcore::nngcore
-  # ${nngcore_LIBRARIES}
 )
-target_include_directories(client
-  PUBLIC
-    ${nngcore_INCLUDE_DIRS}
-)
-target_include_directories(client
+target_include_directories(server
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  # PRIVATE
-  #   ${nngcore_INCLUDE_DIRS}
 )
-
-# target_link_libraries(free_fleet_server
-#   free_fleet::free_fleet
-#   Eigen3::Eigen
-#   ${rclcpp_LIBRARIES}
-#   ${rmf_fleet_msgs_LIBRARIES}
-# )
-
-# target_include_directories(free_fleet_server
-#   PUBLIC
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-#     ${rclcpp_INCLUDE_DIRS}
-#     ${rmf_fleet_msgs_INCLUDE_DIRS}
-# )
 
 install(
   TARGETS 
-    client
-  RUNTIME DESTINATION lib/client
+    server
+  RUNTIME DESTINATION lib/server
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
 )

@@ -1,60 +1,59 @@
+#include <thread>
+#include <iostream>
+
 #include <nngcore/Server.hpp>
+
+#include <nng/protocol/pubsub0/pub.h>
+#include <nng/protocol/pubsub0/sub.h>
 
 #include "utilities.hpp"
 #include "free_fleet_msgs.pb.h"
 
-Server::Work* Server::Work::make(nng_socket sock, Callback cb)
-{
-  Work* w;
-  int rv;
-
-	if ((w = static_cast<Work*>(nng_alloc(sizeof(*w)))) == nullptr)
-  {
-		fatal("nng_alloc", NNG_ENOMEM);
-    return nullptr;
-	}
-	if ((rv = nng_aio_alloc(&w->aio, cb, w)) != 0)
-  {
-		fatal("nng_aio_alloc", rv);
-    return nullptr;
-	}
-	if ((rv = nng_ctx_open(&w->ctx, sock)) != 0)
-  {
-		fatal("nng_ctx_open", rv);
-    return nullptr;
-	}
-	w->state = work::INIT;
-	return w;
-}
-
-Server::SharedPtr Server::make(const std::string& url, int parallels)
+Server::SharedPtr Server::make(const std::string& url)
 {
   SharedPtr server = SharedPtr(new Server);
   int rv;
 
-	rv = nng_rep0_open(&(server->_sock));
-	if (rv != 0)
+  if ((rv = nng_sub0_open(&server->_sock)) != 0)
   {
-		fatal("nng_rep0_open", rv);
+    fatal("nng_sub0_open", rv);
     return nullptr;
-	}
-  
-  for (int i = 0; i < parallels; ++i)
-  {
-    Work* new_work = Work::make(server->_sock);
-    if (new_work)
-      server->_works.push_back(new_work);
   }
+
+  // subscribe to fleet states
+  if ((rv = nng_setopt(server->_sock, NNG_OPT_SUB_SUBSCRIBE, "fleet_state", 0)) != 0)
+  {
+    fatal("nng_setopt", rv);
+    return nullptr;
+  }
+  if ((rv = nng_dial(server->_sock, url.c_str(), nullptr, 0)) != 0)
+  {
+    fatal("nng_dial", rv);
+    return nullptr;
+  }
+
+  return server;
 }
 
 void Server::test()
-{}
+{
+  int rv;
+  for (int i = 0; i < 1000000; ++i)
+  {
+    char* buf = nullptr;
+    std::size_t sz;
+    if ((rv = nng_recv(_sock, &buf, &sz, NNG_FLAG_ALLOC)) != 0)
+    {
+      fatal("nng_recv", rv);
+    }
+    std::cout << "received a message" << std::endl;
+    nng_free(buf, sz);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+}
 
 Server::Server()
 {}
 
 Server::~Server()
-{}
-
-void Server::callback_function(void* arg)
 {}

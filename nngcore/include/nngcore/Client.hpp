@@ -6,8 +6,6 @@
 #include <memory>
 
 #include <nng/nng.h>
-#include <nng/protocol/reqrep0/req.h>
-#include <nng/supplemental/util/platform.h>
 
 class Client
 {
@@ -15,7 +13,7 @@ public:
 
   using SharedPtr = std::shared_ptr<Client>;
 
-  static SharedPtr make(const std::string& url);
+  static SharedPtr make(const std::string& url, int id);
 
   void test();
 
@@ -23,8 +21,8 @@ public:
 
 private:
 
+  int _id;
   nng_socket _sock;
-  nng_msg* msg;
 
   Client();
 };
