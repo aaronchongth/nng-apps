@@ -21,7 +21,12 @@ Server::SharedPtr Server::make(const std::string& url)
   }
 
   // subscribe to fleet states
-  if ((rv = nng_setopt(server->_sock, NNG_OPT_SUB_SUBSCRIBE, "fleet_state", 0)) != 0)
+  std::string topic = "fleet_state";
+  char topic_char_array[topic.length() + 1];
+  strcpy(topic_char_array, topic.c_str());
+  topic_char_array[topic.length()] = '\0';
+
+  if ((rv = nng_setopt(server->_sock, NNG_OPT_SUB_SUBSCRIBE, topic_char_array, topic.length() + 1)) != 0)
   {
     fatal("nng_setopt", rv);
     return nullptr;
@@ -46,7 +51,38 @@ void Server::test()
     {
       fatal("nng_recv", rv);
     }
-    std::cout << "received a message" << std::endl;
+
+    std::string topic_name = "fleet_state";
+    std::size_t topic_name_size = topic_name.size() + 1;
+
+    if (sz < topic_name_size)
+    {
+      std::cout << "ERROR: Message seems to be shorter than the topic name" 
+          << std::endl;
+      continue;
+    }
+
+    char* msg_start = buf + topic_name_size;
+    std::size_t msg_size = sz - topic_name_size - 1;
+    std::string serialized_msg(msg_start, msg_size);
+
+    // std::cout << "Serialized message size: " << msg_size << std::endl;
+
+    free_fleet_msgs::FleetState fs;
+    if (!fs.ParseFromString(serialized_msg))
+    {
+      std::cout << "Unable to deserialize message" << std::endl;
+    }
+    else
+    {
+      std::cout << "Received state with [" << fs.robots_size() << "] robots: ";
+      for (int i = 0; i < fs.robots_size(); ++i)
+      {
+        std::cout << fs.robots(i).name() << ", ";
+      }
+      std::cout << std::endl;
+    }
+
     nng_free(buf, sz);
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }

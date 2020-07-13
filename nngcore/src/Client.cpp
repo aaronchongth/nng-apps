@@ -19,7 +19,7 @@ Client::SharedPtr Client::make(const std::string& url, int id)
     return nullptr;
   }
 
-  if ((rv = nng_listen(client->_sock, url.c_str(), nullptr, 0)) < 0)
+  if ((rv = nng_listen(client->_sock, url.c_str(), NULL, 0)) < 0)
   {
     fatal("nng_listen", rv);
     return nullptr;
@@ -31,10 +31,7 @@ Client::SharedPtr Client::make(const std::string& url, int id)
 
 void Client::test()
 {
-  // nng_time start;
-  // nng_time end;
-
-  // start = nng_clock();
+  int rv;
 
   for (;;)
   {
@@ -42,31 +39,42 @@ void Client::test()
     fs.set_name("test_fleet");
     free_fleet_msgs::RobotState* rs = fs.add_robots();
     rs->set_name("robot_" + std::to_string(_id));
-
     std::string serialized_fs = fs.SerializeAsString();
+    
+    std::size_t arr_size = serialized_fs.length() + 1;
+    char char_array[arr_size];
+    strcpy(char_array, serialized_fs.c_str());
 
     nng_msg* msg;
-    int rv;
-
-    std::cout << "client " << _id << " publishing..." << std::endl;
-
-    char* d = date();
-    if ((rv == nng_send(_sock, d, strlen(d) + 1, 0)) != 0)
-    // if ((rv = nng_send(
-    //       _sock,
-    //       static_cast<void*>(&serialized_fs),
-    //       serialized_fs.c_str(),
-    //       serialized_fs.size() + 1,
-    //       0)) != 0)
+    if ((rv = nng_msg_alloc(&msg, 0)) != 0)
     {
-      fatal("nng_send", rv);
+      fatal("nng_msg_alloc", rv);
+      continue;
+    }
+    if ((rv = nng_msg_append(msg, char_array, arr_size)) != 0)
+    {
+      fatal("nng_msg_append", rv);
+      continue;
     }
 
+    std::string topic_name = "fleet_state";
+    std::size_t topic_name_size = topic_name.length() + 1;
+    if ((rv = nng_msg_insert(msg, topic_name.c_str(), topic_name_size)) != 0)
+    {
+      fatal("nng_msg_insert", rv);
+      continue;
+    }
+
+    std::cout << "client " << _id << " publishing serialized size: " 
+        << arr_size - 1 << std::endl;
+
+    if ((rv = nng_sendmsg(_sock, msg, nng_msg_len(msg))) != 0)
+    {
+      fatal("nng_sendmsg", rv);
+      continue;
+    }
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
-
-  // end = nng_clock();
-	// printf("100 sends took %u milliseconds.\n", (uint32_t)(end - start));
 }
 
 Client::~Client()
